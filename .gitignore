@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 # Dependencies
 node_modules/
 __pycache__/
@@ -91,4 +93,5 @@ dist/
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
+>>>>>>> 531f28bdaf8bfef0911c13ff2f31c60bc6b3a15e
 .vercel
