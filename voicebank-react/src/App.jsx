@@ -47,11 +47,11 @@ function App() {
         <Routes>
           <Route 
             path="/" 
-            element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage login={login} />} 
+            element={<LoginPage login={login} />} 
           />
           <Route 
             path="/login" 
-            element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage login={login} />} 
+            element={<LoginPage login={login} />} 
           />
           <Route path="/register" element={<RegisterPage />} />
           <Route 

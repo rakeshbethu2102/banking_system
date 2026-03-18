@@ -4,6 +4,7 @@ import { authService } from '../services/api';
 import './AuthStyles.css';
 
 import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const LoginPage = ({ login }) => {
   const navigate = useNavigate();
@@ -334,7 +335,7 @@ const LoginPage = ({ login }) => {
         </div>
 
         <div className="auth-footer">
-          <p>Don't have an account? <a href="/register">Sign Up</a></p>
+          <p>Don't have an account? <Link to="/register">Sign Up</Link></p>
         </div>
       </div>
     </div>

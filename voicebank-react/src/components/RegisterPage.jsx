@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import VoiceAuth from '../utils/VoiceAuth';
 import { authService } from '../services/api';
 import './AuthStyles.css';
+import { Link } from "react-router-dom";
 
 import { useNavigate } from 'react-router-dom';
 
@@ -610,7 +611,7 @@ const RegisterPage = () => {
         </div>
 
         <div className="auth-footer">
-          <p>Already have an account? <a href="/login">Sign In</a></p>
+          <p>Already have an account? <Link to="/login">Sign In</Link></p>
         </div>
       </div>
     </div>

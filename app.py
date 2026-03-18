@@ -204,7 +204,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 @app.route('/')
 def index():
     # Redirect to the React frontend login page by default
-    return redirect('http://localhost:3001/login')
+    return redirect('http://localhost:5173/login')
 
 @app.route('/process_speech', methods=['POST'])
 def process_speech():
