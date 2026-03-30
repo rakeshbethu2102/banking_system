@@ -1,5 +1,5 @@
 // src/services/api.js
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // Create a base API request function
 const apiRequest = async (endpoint, options = {}) => {
@@ -82,7 +82,7 @@ export const authService = {
 export const bankingService = {
   // Process speech commands (existing voiceBank functionality)
   processSpeech: async (speechText, language = 'en') => {
-    return fetch('http://localhost:5000/process_speech', {
+    return fetch(`${API_BASE_URL.replace('/api', '')}/process_speech`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
