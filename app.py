@@ -20,7 +20,7 @@ users_db = {}
 logged_in_users = {}
 
 # Initialize text-to-speech engine
-tts_engine = gTTS(lang='en')
+tts_engine = gTTS(text='hello',lang='en')
 
 # Helper function to hash passwords
 def hash_password(password):
