@@ -197,8 +197,6 @@ def process_help(lang='en'):
     response = "I can help you with the following: Check account balance, Transfer funds information, Loan details, Transaction history. Please tell me what you want to do."
     return response
 
-from flask import Flask, render_template, request, jsonify, session, redirect
-...
 @app.route('/')
 def index():
     # Redirect to the React frontend login page by default
