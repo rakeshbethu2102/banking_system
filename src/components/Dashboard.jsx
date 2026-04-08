@@ -257,8 +257,8 @@ const Dashboard = ({ user, logout }) => {
 
   // helper for redirecting to Flask index.html page
   const goToFlaskIndex = () => {
-    // open in same window
-    window.location.href = 'http://localhost:5000/';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+    window.location.href = backendUrl;
   };
 
   // optional: automatically redirect to the Flask index.html

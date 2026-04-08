@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
 import speech_recognition as sr
 from gtts import gTTS
@@ -7,20 +7,43 @@ import re
 from datetime import datetime
 import secrets
 import hashlib
+import os
+
+from dotenv import load_dotenv
+from pymongo import MongoClient, errors
+
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)  # Secret key for sessions
+app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(16))  # Secret key for sessions
 CORS(app)  # Enable CORS for cross-origin requests
 
-# In-memory user database (in production, use a real database)
-users_db = {}
+MONGO_URI = os.getenv('MONGO_URI')
+if not MONGO_URI:
+    raise RuntimeError('MONGO_URI is not set. Add it to your environment or .env file.')
+
+MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'banking_system')
+mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+try:
+    mongo_client.admin.command('ping')
+except errors.PyMongoError as exc:
+    raise RuntimeError(f'Unable to connect to MongoDB Atlas: {exc}') from exc
+mongo_db = mongo_client[MONGO_DB_NAME]
+users_collection = mongo_db['users']
+users_collection.create_index('username', unique=True)
+users_collection.create_index('email', unique=True)
+
+# Materialize the database/collections on first run.
+bootstrap_collection = mongo_db['app_metadata']
+bootstrap_collection.update_one(
+    {'_id': 'bootstrap'},
+    {'$setOnInsert': {'created_at': str(datetime.now()), 'app': 'banking_system'}},
+    upsert=True,
+)
 
 # User session management
 logged_in_users = {}
-
-# Initialize text-to-speech engine
-tts_engine = gTTS(text='hello',lang='en')
 
 # Helper function to hash passwords
 def hash_password(password):
@@ -268,15 +291,22 @@ def register():
             return jsonify({'success': False, 'message': 'PIN must be a 4 digit number'}), 400
         
         # Check if user already exists
-        if username in users_db:
+        existing_user = users_collection.find_one({
+            '$or': [
+                {'username': username},
+                {'email': email}
+            ]
+        })
+        if existing_user:
             return jsonify({'success': False, 'message': 'Username already exists'}), 400
         
         # Hash the password and pin
         hashed_pwd, salt = hash_password(password)
         hashed_pin, pin_salt = hash_password(pin)
         
-        # Store user in database
-        users_db[username] = {
+        # Store user in MongoDB Atlas
+        users_collection.insert_one({
+            'username': username,
             'password_hash': hashed_pwd,
             'salt': salt,
             'pin_hash': hashed_pin,
@@ -286,7 +316,7 @@ def register():
             'lastName': data.get('lastName', ''),
             'phone': data.get('phone', ''),
             'created_at': str(datetime.now())
-        }
+        })
         
         return jsonify({'success': True, 'message': 'User registered successfully'})
     
@@ -304,12 +334,13 @@ def login():
             return jsonify({'success': False, 'message': 'Username and password are required'}), 400
         
         # Check if user exists
-        if username not in users_db:
+        user_record = users_collection.find_one({'username': username})
+        if not user_record:
             return jsonify({'success': False, 'message': 'Invalid credentials'}), 400
         
         # Verify password
-        stored_hash = users_db[username]['password_hash']
-        salt = users_db[username]['salt']
+        stored_hash = user_record['password_hash']
+        salt = user_record['salt']
         pwdhash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('ascii'), 100000)
         
         if pwdhash.hex() != stored_hash:
@@ -325,9 +356,9 @@ def login():
             'token': session_token,
             'user': {
                 'username': username,
-                'firstName': users_db[username]['firstName'],
-                'lastName': users_db[username]['lastName'],
-                'email': users_db[username]['email']
+                'firstName': user_record.get('firstName', ''),
+                'lastName': user_record.get('lastName', ''),
+                'email': user_record.get('email', '')
             }
         })
     
@@ -390,7 +421,7 @@ def account_info():
         return jsonify({'success': False, 'message': 'PIN required to access account overview'}), 400
 
     # verify user exists and has a pin
-    record = users_db.get(user)
+    record = users_collection.find_one({'username': user})
     if not record or 'pin_hash' not in record:
         return jsonify({'success': False, 'message': 'PIN not set for this user'}), 400
 

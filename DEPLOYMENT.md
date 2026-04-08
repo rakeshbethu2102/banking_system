@@ -147,6 +147,19 @@ git push origin main
 # Vercel will auto-deploy from GitHub
 ```
 
+### 3.3 Deploy Frontend on Vercel
+1. Go to https://vercel.com and import this GitHub repository.
+2. Set the framework preset to Vite.
+3. Set the build command to `npm run build` and output directory to `dist`.
+4. Add these environment variables in Vercel:
+  ```
+  VITE_API_BASE_URL=https://your-backend.example.com/api
+  VITE_BACKEND_URL=https://your-backend.example.com
+  ```
+5. Deploy the project.
+
+Note: Vercel will host the React frontend. The Flask backend should remain on Railway, Render, or another Python host, and the frontend must point to that backend URL.
+
 ---
 
 ## Step 4: Test End-to-End
