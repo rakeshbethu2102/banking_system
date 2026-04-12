@@ -10,6 +10,7 @@ import hashlib
 import os
 
 from dotenv import load_dotenv
+import certifi
 from pymongo import MongoClient, errors
 
 load_dotenv()
@@ -24,7 +25,12 @@ if not MONGO_URI:
     raise RuntimeError('MONGO_URI is not set. Add it to your environment or .env file.')
 
 MONGO_DB_NAME = os.getenv('MONGO_DB_NAME', 'banking_system')
-mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+mongo_client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=5000,
+    tls=True,
+    tlsCAFile=certifi.where(),
+)
 try:
     mongo_client.admin.command('ping')
 except errors.PyMongoError as exc:
