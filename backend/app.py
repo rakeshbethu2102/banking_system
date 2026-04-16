@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
-import speech_recognition as sr
-from gtts import gTTS
 import json
 import re
 from datetime import datetime
