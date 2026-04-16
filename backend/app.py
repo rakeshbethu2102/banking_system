@@ -231,6 +231,15 @@ def index():
     # Redirect to the React frontend login page by default
     return redirect('http://localhost:5173/login')
 
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint for deployment platforms."""
+    try:
+        mongo_client.admin.command('ping')
+        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+    except Exception as exc:
+        return jsonify({'status': 'unhealthy', 'error': str(exc)}), 500
+
 @app.route('/process_speech', methods=['POST'])
 def process_speech():
     try:
